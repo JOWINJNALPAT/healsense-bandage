@@ -7,7 +7,7 @@ import type {
   ReviewNote,
   PatientTrendPoint,
 } from '../types';
-export const CLOUDFLARE_TUNNEL_URL = 'https://evanescence-guestbook-thu-feeding.trycloudflare.com';
+export const CLOUDFLARE_TUNNEL_URL = 'https://usd-paying-riders-involving.trycloudflare.com';
 export const LOCAL_WIFI_URL = 'http://192.168.1.4:5000';
 export const DEFAULT_SERVER_URL = CLOUDFLARE_TUNNEL_URL;
 

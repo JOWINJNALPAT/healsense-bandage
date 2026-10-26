@@ -13,6 +13,9 @@ venv/
 *.db
 uploads/*.jpg
 uploads/*.png
+backend/uploads/*.jpg
+backend/uploads/*.png
+backend/uploads/
 tests/temp_uploads/
 tests/test_run.db
 
