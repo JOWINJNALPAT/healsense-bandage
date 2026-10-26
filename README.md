@@ -1,6 +1,8 @@
 # HealSense™ — Smart Wound Monitoring and Doctor Dashboard
 
 [![Clinical Prototype](https://img.shields.io/badge/Status-Research%20Prototype-teal.svg)](#clinical-safety--regulatory-limitations)
+[![Android APK](https://img.shields.io/badge/Android%20APK-Download%20Build-success.svg)](https://github.com/JOWINJNALPAT/healsense-bandage/actions/runs/40273529060)
+[![Build Android APK](https://github.com/JOWINJNALPAT/healsense-bandage/actions/workflows/build-apk.yml/badge.svg)](https://github.com/JOWINJNALPAT/healsense-bandage/actions/workflows/build-apk.yml)
 [![Backend](https://img.shields.io/badge/Backend-Flask%20%7C%20OpenCV%20%7C%20SQLAlchemy-navy.svg)](backend/)
 [![Frontend](https://img.shields.io/badge/Frontend-React%2019%20%7C%20TypeScript%20%7C%20Vite-blue.svg)](frontend/)
 [![Tests](https://img.shields.io/badge/Tests-11%20Passed%20(100%25)-emerald.svg)](backend/tests/)
@@ -217,7 +219,30 @@ docker-compose up --build
 
 ---
 
-## 9. API Reference Summary
+## 9. Mobile App (Android APK)
+
+The HealSense native Android application is powered by **Capacitor 8** with camera and storage permissions configured in `AndroidManifest.xml`.
+
+### Automated Cloud Builds via GitHub Actions
+Every push to `main` automatically builds a release-ready debug APK on Ubuntu runners with JDK 21 and the Android SDK.
+
+- **Download APK**: Go to [GitHub Actions Workflow Runs](https://github.com/JOWINJNALPAT/healsense-bandage/actions/runs/40273529060).
+- Scroll down to the **Artifacts** section at the bottom.
+- Click **`HealSense-Android-App`** to download `HealSense-Android-App.zip`.
+- Extract the zip file to obtain **`app-debug.apk`**.
+
+### Installation on Android Device:
+1. Transfer or download `app-debug.apk` to your Android smartphone or tablet.
+2. Tap the APK file to install.
+3. If prompted, enable *"Install unknown apps"* for your file manager or browser.
+4. Launch **HealSense** from your home screen.
+5. Login with demo credentials:
+   - Doctor: `doctor@healsense.med` / `DoctorSecure2026!`
+   - Nurse: `nurse@healsense.med` / `NurseSecure2026!`
+
+---
+
+## 10. API Reference Summary
 
 | Method | Endpoint | Description | Auth Required |
 | :--- | :--- | :--- | :--- |
@@ -244,7 +269,7 @@ docker-compose up --build
 
 ---
 
-## 10. Final Acceptance Verification Checklist
+## 11. Final Acceptance Verification Checklist
 
 - [x] Application starts locally using documented commands.
 - [x] Landing page and responsive dashboard render with medical design system.
