@@ -7,9 +7,16 @@ import type {
   ReviewNote,
   PatientTrendPoint,
 } from '../types';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
+const getApiBaseUrl = () => {
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
+  if (typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform()) {
+    return 'https://pink-areas-fix.loca.lt';
+  }
+  return '';
+};
+const API_BASE_URL = getApiBaseUrl();
 class ApiService {
   private getHeaders(isFormData = false): HeadersInit {
     const headers: Record<string, string> = {};
