@@ -22,11 +22,9 @@ jobs:
       - name: Set up Java JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: 'temurin'
           java-version: '17'
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+          cache: 'gradle'
 
       - name: Install Frontend Dependencies
         working-directory: frontend
