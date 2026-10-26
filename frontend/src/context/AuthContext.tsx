@@ -9,6 +9,7 @@ interface AuthContextType {
   isDoctor: boolean;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  register: (data: { name: string; email: string; password: string; role: UserRole }) => Promise<void>;
   demoLogin: (role?: UserRole) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -53,6 +54,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('healsense_user', JSON.stringify(res.user));
   };
 
+  const register = async (data: { name: string; email: string; password: string; role: UserRole }) => {
+    const res = await api.register(data);
+    setToken(res.token);
+    setUser(res.user);
+    localStorage.setItem('healsense_token', res.token);
+    localStorage.setItem('healsense_user', JSON.stringify(res.user));
+  };
+
   const demoLogin = async (role: UserRole = 'doctor') => {
     const res = await api.demoLogin(role);
     setToken(res.token);
@@ -78,6 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isDoctor,
         loading,
         login,
+        register,
         demoLogin,
         logout,
       }}

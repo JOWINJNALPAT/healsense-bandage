@@ -5,6 +5,48 @@ from app.extensions import db
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
+@auth_bp.route('/register', methods=['POST'])
+def register():
+    """Register a new clinician or staff account."""
+    data = request.get_json() or {}
+    name = data.get('name', '').strip()
+    email = data.get('email', '').strip().lower()
+    password = data.get('password', '')
+    role = data.get('role', 'doctor').strip().lower()
+
+    if not name:
+        return jsonify({'error': 'Full name is required.'}), 400
+    if not email or '@' not in email:
+        return jsonify({'error': 'A valid medical email address is required.'}), 400
+    if not password or len(password) < 6:
+        return jsonify({'error': 'Password must be at least 6 characters long.'}), 400
+    if role not in ('doctor', 'staff'):
+        return jsonify({'error': 'Role must be either "doctor" or "staff".'}), 400
+
+    existing_user = User.query.filter_by(email=email).first()
+    if existing_user:
+        return jsonify({'error': 'An account with this email already exists.'}), 409
+
+    new_user = User(
+        name=name,
+        email=email,
+        role=role,
+        is_active=True
+    )
+    new_user.set_password(password)
+
+    db.session.add(new_user)
+    db.session.commit()
+
+    token = generate_token(new_user)
+    log_audit_action('USER_REGISTER', 'User', new_user.id, {'email': new_user.email, 'role': new_user.role, 'name': new_user.name})
+
+    return jsonify({
+        'message': 'Account created successfully.',
+        'token': token,
+        'user': new_user.to_dict()
+    }), 201
+
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json() or {}

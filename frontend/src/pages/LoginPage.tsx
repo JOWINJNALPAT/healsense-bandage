@@ -5,32 +5,46 @@ import {
   Activity,
   Lock,
   Mail,
+  User,
   ArrowRight,
   UserCheck,
+  UserPlus,
   AlertCircle,
   Settings,
   Wifi,
   CheckCircle2,
   RefreshCw,
   X,
+  Stethoscope,
+  ClipboardList,
 } from 'lucide-react';
 import {
   getApiBaseUrl,
   setCustomApiUrl,
   testServerConnection,
   DEFAULT_SERVER_URL,
+  CLOUDFLARE_TUNNEL_URL,
+  LOCAL_WIFI_URL,
 } from '../services/api';
 
 export const LoginPage: React.FC = () => {
-  const { login, demoLogin } = useAuth();
+  const { login, register, demoLogin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const from = (location.state as any)?.from?.pathname || '/dashboard';
 
+  // Auth Mode: 'signin' or 'register'
+  const [mode, setMode] = useState<'signin' | 'register'>('signin');
+
+  // Form Fields
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState<'doctor' | 'staff'>('doctor');
+
   const [error, setError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   // Server Settings Modal State
@@ -79,18 +93,31 @@ export const LoginPage: React.FC = () => {
   const formatErrorMessage = (err: any): string => {
     const msg = err?.message || String(err);
     if (/fetch|network|failed to fetch|econnrefused/i.test(msg)) {
-      return `Cannot reach server at ${currentUrl || 'configured URL'}. Ensure your PC is running the backend and both devices are on the same Wi-Fi network.`;
+      return `Cannot reach server at ${currentUrl || 'configured URL'}. Ensure your PC is running the backend or configure a 24/7 cloud server URL.`;
     }
-    return msg || 'Authentication failed. Please check credentials.';
+    return msg || 'Action failed. Please check your information.';
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSuccessMsg(null);
     setLoading(true);
+
     try {
-      await login(email, password);
-      navigate(from, { replace: true });
+      if (mode === 'signin') {
+        await login(email, password);
+        navigate(from, { replace: true });
+      } else {
+        if (!name.trim()) {
+          throw new Error('Please enter your full name.');
+        }
+        if (password.length < 6) {
+          throw new Error('Password must be at least 6 characters.');
+        }
+        await register({ name, email, password, role });
+        navigate(from, { replace: true });
+      }
     } catch (err: any) {
       setError(formatErrorMessage(err));
     } finally {
@@ -98,11 +125,12 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const handleDemoSignIn = async (role: 'doctor' | 'staff') => {
+  const handleDemoSignIn = async (demoRole: 'doctor' | 'staff') => {
     setError(null);
+    setSuccessMsg(null);
     setLoading(true);
     try {
-      await demoLogin(role);
+      await demoLogin(demoRole);
       navigate(from, { replace: true });
     } catch (err: any) {
       setError(formatErrorMessage(err));
@@ -112,9 +140,9 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slatebg flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slatebg flex flex-col justify-center py-10 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <Link to="/" className="inline-flex items-center gap-2.5 mb-4">
+        <Link to="/" className="inline-flex items-center gap-2.5 mb-3">
           <div className="w-10 h-10 rounded-xl bg-teal-600 flex items-center justify-center text-white shadow-md shadow-teal-500/25">
             <Activity className="w-6 h-6" />
           </div>
@@ -122,14 +150,52 @@ export const LoginPage: React.FC = () => {
             Heal<span className="text-teal-600">Sense</span>™
           </span>
         </Link>
-        <h2 className="text-2xl font-bold text-navy-900 tracking-tight">Clinical Portal Sign In</h2>
+        <h2 className="text-2xl font-bold text-navy-900 tracking-tight">
+          {mode === 'signin' ? 'Clinical Portal Sign In' : 'Register New Clinician'}
+        </h2>
         <p className="text-xs text-slate-500 mt-1">
-          Authorized healthcare professionals & laboratory research personnel
+          {mode === 'signin'
+            ? 'Authorized healthcare professionals & laboratory research personnel'
+            : 'Create a new Doctor or Nurse account with custom credentials'}
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0">
-        <div className="bg-white py-8 px-6 shadow-xl rounded-2xl border border-slate-200/80 sm:px-10">
+      <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0">
+        <div className="bg-white py-7 px-6 shadow-xl rounded-2xl border border-slate-200/80 sm:px-10">
+          
+          {/* Mode Tabs */}
+          <div className="flex rounded-xl bg-slate-100 p-1 mb-6 border border-slate-200">
+            <button
+              type="button"
+              onClick={() => {
+                setMode('signin');
+                setError(null);
+              }}
+              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                mode === 'signin'
+                  ? 'bg-white text-navy-900 shadow-xs'
+                  : 'text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMode('register');
+                setError(null);
+              }}
+              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                mode === 'register'
+                  ? 'bg-white text-teal-700 shadow-xs'
+                  : 'text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <UserPlus className="w-3.5 h-3.5" />
+              Sign Up (New Doctor/Nurse)
+            </button>
+          </div>
+
           {error && (
             <div className="mb-5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs">
               <div className="flex items-start gap-2.5">
@@ -143,7 +209,7 @@ export const LoginPage: React.FC = () => {
                       className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-rose-300 text-rose-800 rounded-lg font-bold text-[11px] shadow-xs hover:bg-rose-100 transition-all"
                     >
                       <Settings className="w-3.5 h-3.5 text-rose-600" />
-                      Configure Server URL
+                      Configure Cloud / Server URL
                     </button>
                   )}
                 </div>
@@ -151,46 +217,118 @@ export const LoginPage: React.FC = () => {
             </div>
           )}
 
-          {/* Quick Demo Access Bar */}
-          <div className="mb-6 p-4 rounded-xl bg-teal-50/70 border border-teal-200/80 text-xs">
-            <p className="font-bold text-teal-900 mb-2 flex items-center gap-1.5">
-              <UserCheck className="w-4 h-4 text-teal-700" /> Instant Demo Access:
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => handleDemoSignIn('doctor')}
-                disabled={loading}
-                className="w-full py-2 px-2.5 text-center font-medium bg-white hover:bg-teal-50 text-navy-900 rounded-lg border border-teal-300 shadow-xs transition-all text-[11px]"
-              >
-                <strong>Doctor Role</strong>
-                <span className="block text-[10px] text-slate-500">Dr. E. Reed, MD</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleDemoSignIn('staff')}
-                disabled={loading}
-                className="w-full py-2 px-2.5 text-center font-medium bg-white hover:bg-teal-50 text-navy-900 rounded-lg border border-teal-300 shadow-xs transition-all text-[11px]"
-              >
-                <strong>Nurse / Staff</strong>
-                <span className="block text-[10px] text-slate-500">J. Rivera, RN</span>
-              </button>
+          {successMsg && (
+            <div className="mb-5 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <span>{successMsg}</span>
             </div>
-          </div>
+          )}
 
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-slate-400 font-semibold">Or Sign In with Email</span>
-            </div>
-          </div>
+          {/* Quick Demo Access Bar (Only in Sign In mode) */}
+          {mode === 'signin' && (
+            <div className="mb-6 p-3.5 rounded-xl bg-teal-50/70 border border-teal-200/80 text-xs">
+              <p className="font-bold text-teal-900 mb-2 flex items-center gap-1.5">
+                <UserCheck className="w-4 h-4 text-teal-700" /> Instant Demo Access:
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleDemoSignIn('doctor')}
+                  disabled={loading}
+                  className="w-full py-2 px-2 text-center font-medium bg-white hover:bg-teal-50 text-navy-900 rounded-lg border border-teal-300 shadow-xs transition-all text-[11px]"
+                >
+                  <strong>Doctor Role</strong>
+                  <span className="block text-[10px] text-slate-500">Dr. E. Reed, MD</span>
+                </button>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+                <button
+                  type="button"
+                  onClick={() => handleDemoSignIn('staff')}
+                  disabled={loading}
+                  className="w-full py-2 px-2 text-center font-medium bg-white hover:bg-teal-50 text-navy-900 rounded-lg border border-teal-300 shadow-xs transition-all text-[11px]"
+                >
+                  <strong>Nurse / Staff</strong>
+                  <span className="block text-[10px] text-slate-500">J. Rivera, RN</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {mode === 'signin' && (
+            <div className="relative my-5">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-2 text-slate-400 font-semibold">Or Sign In with Email</span>
+              </div>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-3.5">
+            {/* Name & Role (Register Mode Only) */}
+            {mode === 'register' && (
+              <>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Full Legal Name & Title</label>
+                  <div className="relative rounded-lg shadow-xs">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <User className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="text"
+                      required
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="e.g. Dr. Sarah Jenkins, MD"
+                      className="block w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm text-navy-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">Clinical Role</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setRole('doctor')}
+                      className={`flex items-center gap-2 p-2.5 rounded-xl border text-left transition-all ${
+                        role === 'doctor'
+                          ? 'border-teal-600 bg-teal-50/80 text-teal-950 ring-1 ring-teal-500'
+                          : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      <Stethoscope className="w-4 h-4 text-teal-600 flex-shrink-0" />
+                      <div>
+                        <div className="text-xs font-bold leading-tight">Doctor</div>
+                        <div className="text-[10px] text-slate-500">Evaluations & Reports</div>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setRole('staff')}
+                      className={`flex items-center gap-2 p-2.5 rounded-xl border text-left transition-all ${
+                        role === 'staff'
+                          ? 'border-teal-600 bg-teal-50/80 text-teal-950 ring-1 ring-teal-500'
+                          : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      <ClipboardList className="w-4 h-4 text-teal-600 flex-shrink-0" />
+                      <div>
+                        <div className="text-xs font-bold leading-tight">Nurse / Staff</div>
+                        <div className="text-[10px] text-slate-500">Intake & Bandage Scans</div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Medical Email</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                {mode === 'register' ? 'Work / Medical Email' : 'Medical Email'}
+              </label>
               <div className="relative rounded-lg shadow-xs">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                   <Mail className="w-4 h-4" />
@@ -200,7 +338,7 @@ export const LoginPage: React.FC = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="doctor@healsense.med"
+                  placeholder="doctor@hospital.org"
                   className="block w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm text-navy-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                 />
               </div>
@@ -217,7 +355,7 @@ export const LoginPage: React.FC = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
+                  placeholder="At least 6 characters"
                   className="block w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm text-navy-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                 />
               </div>
@@ -226,16 +364,22 @@ export const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 border border-transparent rounded-xl shadow-sm text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all disabled:opacity-50"
+              className="w-full mt-2 flex items-center justify-center gap-2 py-2.5 px-4 border border-transparent rounded-xl shadow-sm text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all disabled:opacity-50"
             >
-              {loading ? 'Authenticating...' : 'Sign In to Portal'}
+              {loading
+                ? mode === 'signin'
+                  ? 'Authenticating...'
+                  : 'Registering Account...'
+                : mode === 'signin'
+                ? 'Sign In to Portal'
+                : 'Create Account & Sign In'}
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
 
           {/* Server Connection Bar */}
-          <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
-            <div className="flex items-center gap-1.5 text-slate-500 truncate max-w-[220px]">
+          <div className="mt-5 pt-3.5 border-t border-slate-100 flex items-center justify-between text-xs">
+            <div className="flex items-center gap-1.5 text-slate-500 truncate max-w-[210px]">
               <Wifi className="w-3.5 h-3.5 text-teal-600 flex-shrink-0" />
               <span className="truncate text-[11px]" title={currentUrl}>
                 {currentUrl ? currentUrl.replace(/^https?:\/\//, '') : 'Default Server'}
@@ -274,7 +418,7 @@ export const LoginPage: React.FC = () => {
 
             <div className="p-6 space-y-4">
               <p className="text-xs text-slate-600 leading-relaxed">
-                Connect your mobile phone to the computer running the HealSense backend. Ensure both your phone and PC are on the same Wi-Fi.
+                Connect your mobile phone to your cloud server (e.g. Render) or your local computer. When using cloud hosting, your app works anywhere, including at college!
               </p>
 
               <div>
@@ -286,7 +430,7 @@ export const LoginPage: React.FC = () => {
                     setServerUrlInput(e.target.value);
                     setTestState('idle');
                   }}
-                  placeholder="http://192.168.1.4:5000"
+                  placeholder="https://your-app.onrender.com"
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-mono text-navy-900 focus:outline-none focus:ring-2 focus:ring-teal-500"
                 />
               </div>
@@ -298,8 +442,8 @@ export const LoginPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => {
-                      setServerUrlInput('https://evanescence-guestbook-thu-feeding.trycloudflare.com');
-                      handleTestConnection('https://evanescence-guestbook-thu-feeding.trycloudflare.com');
+                      setServerUrlInput(CLOUDFLARE_TUNNEL_URL);
+                      handleTestConnection(CLOUDFLARE_TUNNEL_URL);
                     }}
                     className="px-2.5 py-1 text-[11px] bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 rounded-md font-semibold transition-colors"
                   >
@@ -308,22 +452,12 @@ export const LoginPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => {
-                      setServerUrlInput('http://192.168.1.4:5000');
-                      handleTestConnection('http://192.168.1.4:5000');
+                      setServerUrlInput(LOCAL_WIFI_URL);
+                      handleTestConnection(LOCAL_WIFI_URL);
                     }}
                     className="px-2.5 py-1 text-[11px] bg-slate-100 hover:bg-slate-200 rounded-md text-navy-900 font-medium transition-colors"
                   >
-                    Wi-Fi: 192.168.1.4:5000
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setServerUrlInput('http://10.0.2.2:5000');
-                      handleTestConnection('http://10.0.2.2:5000');
-                    }}
-                    className="px-2.5 py-1 text-[11px] bg-slate-100 hover:bg-slate-200 rounded-md text-navy-900 font-medium transition-colors"
-                  >
-                    Android Emulator (10.0.2.2)
+                    Home Wi-Fi (192.168.1.4:5000)
                   </button>
                   <button
                     type="button"

@@ -97,6 +97,15 @@ class ApiService {
   }
 
   // --- Auth ---
+  async register(data: { name: string; email: string; password: string; role: 'doctor' | 'staff' }): Promise<{ token: string; user: User; message: string }> {
+    const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    return this.handleResponse(res);
+  }
+
   async login(email: string, password: string):Promise<{ token: string; user: User }> {
     const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
       method: 'POST',
