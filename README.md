@@ -1,7 +1,7 @@
 # HealSense™ — Smart Wound Monitoring and Doctor Dashboard
 
 [![Clinical Prototype](https://img.shields.io/badge/Status-Research%20Prototype-teal.svg)](#clinical-safety--regulatory-limitations)
-[![Android APK](https://img.shields.io/badge/Android%20APK-Download%20Build-success.svg)](https://github.com/JOWINJNALPAT/healsense-bandage/actions/runs/40276203519)
+[![Android APK](https://img.shields.io/badge/Android%20APK-Download%20Build-success.svg)](https://github.com/JOWINJNALPAT/healsense-bandage/actions/runs/40290928306)
 [![Build Android APK](https://github.com/JOWINJNALPAT/healsense-bandage/actions/workflows/build-apk.yml/badge.svg)](https://github.com/JOWINJNALPAT/healsense-bandage/actions/workflows/build-apk.yml)
 [![Backend](https://img.shields.io/badge/Backend-Flask%20%7C%20OpenCV%20%7C%20SQLAlchemy-navy.svg)](backend/)
 [![Frontend](https://img.shields.io/badge/Frontend-React%2019%20%7C%20TypeScript%20%7C%20Vite-blue.svg)](frontend/)
