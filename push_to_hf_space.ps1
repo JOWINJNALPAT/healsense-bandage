@@ -1,17 +1,21 @@
 # Quick deployment script for Hugging Face Spaces
 param(
-    [Parameter(Mandatory=$false)]
-    [string]$HfUsername,
-    [string]$SpaceName = "healsense-api"
+    [Parameter(Position=0)]
+    [string]$HfUsername = "jowinjnalpat",
+
+    [Parameter(Position=1)]
+    [string]$SpaceName = "healsense-api",
+
+    [Parameter(Position=2)]
+    [string]$Token
 )
 
-if (-not $HfUsername) {
-    $HfUsername = Read-Host "Enter your Hugging Face username"
-}
+# Clean up any angle brackets or accidental characters if typed
+$HfUsername = $HfUsername.Trim().TrimStart('<').TrimEnd('>').Trim()
+$SpaceName = $SpaceName.Trim().TrimStart('<').TrimEnd('>').Trim()
 
 if (-not $HfUsername) {
-    Write-Error "Hugging Face username is required."
-    exit 1
+    $HfUsername = "jowinjnalpat"
 }
 
 Write-Host "Syncing backend files into deploy\hf_space..." -ForegroundColor Cyan
@@ -29,14 +33,23 @@ if (-not (Test-Path ".git")) {
 git add .
 git commit -m "Deploy HealSense API to Hugging Face Spaces"
 
-$remoteUrl = "https://huggingface.co/spaces/$HfUsername/$SpaceName"
-Write-Host "Configuring remote: $remoteUrl" -ForegroundColor Cyan
+if ($Token) {
+    $Token = $Token.Trim()
+    $remoteUrl = "https://${HfUsername}:${Token}@huggingface.co/spaces/${HfUsername}/${SpaceName}"
+    $displayUrl = "https://huggingface.co/spaces/$HfUsername/$SpaceName"
+} else {
+    $remoteUrl = "https://huggingface.co/spaces/$HfUsername/$SpaceName"
+    $displayUrl = $remoteUrl
+}
+Write-Host "Configuring remote: $displayUrl" -ForegroundColor Cyan
 
 git remote remove space 2>$null
 git remote add space $remoteUrl
 
-Write-Host "`nPushing to Hugging Face Space ($remoteUrl)..." -ForegroundColor Green
-Write-Host "NOTE: When prompted for password, enter your Hugging Face Access Token (from https://huggingface.co/settings/tokens with Write permission)" -ForegroundColor Yellow
+Write-Host "`nPushing to Hugging Face Space ($displayUrl)..." -ForegroundColor Green
+if (-not $Token) {
+    Write-Host "NOTE: When prompted for password, enter your Hugging Face Access Token (from https://huggingface.co/settings/tokens with Write permission)" -ForegroundColor Yellow
+}
 
 git push space main -f
 
