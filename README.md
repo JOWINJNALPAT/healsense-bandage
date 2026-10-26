@@ -1,7 +1,7 @@
 # HealSense™ — Smart Wound Monitoring and Doctor Dashboard
 
 [![Clinical Prototype](https://img.shields.io/badge/Status-Research%20Prototype-teal.svg)](#clinical-safety--regulatory-limitations)
-[![Android APK](https://img.shields.io/badge/Android%20APK-Download%20Build-success.svg)](https://github.com/JOWINJNALPAT/healsense-bandage/actions/runs/40273529060)
+[![Android APK](https://img.shields.io/badge/Android%20APK-Download%20Build-success.svg)](https://github.com/JOWINJNALPAT/healsense-bandage/actions/runs/40275038001)
 [![Build Android APK](https://github.com/JOWINJNALPAT/healsense-bandage/actions/workflows/build-apk.yml/badge.svg)](https://github.com/JOWINJNALPAT/healsense-bandage/actions/workflows/build-apk.yml)
 [![Backend](https://img.shields.io/badge/Backend-Flask%20%7C%20OpenCV%20%7C%20SQLAlchemy-navy.svg)](backend/)
 [![Frontend](https://img.shields.io/badge/Frontend-React%2019%20%7C%20TypeScript%20%7C%20Vite-blue.svg)](frontend/)
@@ -226,7 +226,7 @@ The HealSense native Android application is powered by **Capacitor 8** with came
 ### Automated Cloud Builds via GitHub Actions
 Every push to `main` automatically builds a release-ready debug APK on Ubuntu runners with JDK 21 and the Android SDK.
 
-- **Download APK**: Go to [GitHub Actions Workflow Runs](https://github.com/JOWINJNALPAT/healsense-bandage/actions/runs/40273529060).
+- **Download APK**: Go to [GitHub Actions Workflow Runs](https://github.com/JOWINJNALPAT/healsense-bandage/actions/runs/40275038001).
 - Scroll down to the **Artifacts** section at the bottom.
 - Click **`HealSense-Android-App`** to download `HealSense-Android-App.zip`.
 - Extract the zip file to obtain **`app-debug.apk`**.
