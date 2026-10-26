@@ -7,16 +7,62 @@ import type {
   ReviewNote,
   PatientTrendPoint,
 } from '../types';
-const getApiBaseUrl = () => {
+export const DEFAULT_SERVER_URL = 'http://192.168.1.4:5000';
+
+export const getApiBaseUrl = (): string => {
+  if (typeof window !== 'undefined') {
+    const custom = localStorage.getItem('healsense_api_url');
+    if (custom && custom.trim()) {
+      return custom.trim().replace(/\/+$/, '');
+    }
+  }
   if (import.meta.env.VITE_API_BASE_URL) {
-    return import.meta.env.VITE_API_BASE_URL;
+    return import.meta.env.VITE_API_BASE_URL.replace(/\/+$/, '');
   }
   if (typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform()) {
-    return 'https://pink-areas-fix.loca.lt';
+    return DEFAULT_SERVER_URL;
   }
   return '';
 };
-const API_BASE_URL = getApiBaseUrl();
+
+export const setCustomApiUrl = (url: string): void => {
+  if (typeof window !== 'undefined') {
+    const cleaned = url.trim().replace(/\/+$/, '');
+    if (cleaned) {
+      localStorage.setItem('healsense_api_url', cleaned);
+    } else {
+      localStorage.removeItem('healsense_api_url');
+    }
+  }
+};
+
+export const testServerConnection = async (targetUrl?: string): Promise<{ success: boolean; message: string; version?: string }> => {
+  const url = (targetUrl !== undefined ? targetUrl.trim().replace(/\/+$/, '') : getApiBaseUrl());
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
+    const res = await fetch(`${url}/api/health`, {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    if (res.ok) {
+      const data = await res.json();
+      return { success: true, message: 'Server is online & operational!', version: data.version || '1.0.0' };
+    }
+    return { success: false, message: `Server replied with HTTP ${res.status}` };
+  } catch (err: any) {
+    if (err.name === 'AbortError') {
+      return { success: false, message: 'Connection timed out (6s). Check if phone and PC are on the same Wi-Fi.' };
+    }
+    return { success: false, message: err.message || 'Cannot reach server. Verify host IP and Wi-Fi.' };
+  }
+};
+
+const API_BASE_URL = {
+  toString: () => getApiBaseUrl(),
+};
 class ApiService {
   private getHeaders(isFormData = false): HeadersInit {
     const headers: Record<string, string> = {};
