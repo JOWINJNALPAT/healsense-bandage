@@ -298,6 +298,16 @@ export const LoginPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => {
+                      setServerUrlInput('https://evanescence-guestbook-thu-feeding.trycloudflare.com');
+                      handleTestConnection('https://evanescence-guestbook-thu-feeding.trycloudflare.com');
+                    }}
+                    className="px-2.5 py-1 text-[11px] bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 rounded-md font-semibold transition-colors"
+                  >
+                    Cloudflare Live (Online)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
                       setServerUrlInput('http://192.168.1.4:5000');
                       handleTestConnection('http://192.168.1.4:5000');
                     }}

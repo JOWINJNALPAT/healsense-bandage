@@ -21,3 +21,5 @@ tests/test_run.db
 .env.local
 .DS_Store
 Thumbs.db
+cloudflared.exe
+
