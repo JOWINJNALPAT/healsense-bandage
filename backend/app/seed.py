@@ -417,8 +417,12 @@ def seed_database(app):
         )
         db.session.add(scan4)
 
-        db.session.commit()
-        print("Database successfully seeded with realistic clinical data and synthetic dressing images!")
+        try:
+            db.session.commit()
+            print("Database successfully seeded with realistic clinical data and synthetic dressing images!")
+        except Exception as e:
+            db.session.rollback()
+            print(f"Database seed notice (already seeded or conflict handled): {e}")
 
 if __name__ == '__main__':
     from app import create_app

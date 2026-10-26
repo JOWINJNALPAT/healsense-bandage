@@ -7,9 +7,10 @@ import type {
   ReviewNote,
   PatientTrendPoint,
 } from '../types';
+export const RENDER_BACKEND_URL = 'https://healsense-bandage1.onrender.com';
 export const CLOUDFLARE_TUNNEL_URL = 'https://aurora-scanning-communities-several.trycloudflare.com';
 export const LOCAL_WIFI_URL = 'http://192.168.1.4:5000';
-export const DEFAULT_SERVER_URL = CLOUDFLARE_TUNNEL_URL;
+export const DEFAULT_SERVER_URL = RENDER_BACKEND_URL;
 
 export const getApiBaseUrl = (): string => {
   if (typeof window !== 'undefined') {

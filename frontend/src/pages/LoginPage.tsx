@@ -23,6 +23,7 @@ import {
   setCustomApiUrl,
   testServerConnection,
   DEFAULT_SERVER_URL,
+  RENDER_BACKEND_URL,
   CLOUDFLARE_TUNNEL_URL,
   LOCAL_WIFI_URL,
 } from '../services/api';
@@ -442,12 +443,22 @@ export const LoginPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => {
+                      setServerUrlInput(RENDER_BACKEND_URL);
+                      handleTestConnection(RENDER_BACKEND_URL);
+                    }}
+                    className="px-2.5 py-1 text-[11px] bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-md font-semibold transition-colors"
+                  >
+                    Render Cloud 24/7 (Online)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
                       setServerUrlInput(CLOUDFLARE_TUNNEL_URL);
                       handleTestConnection(CLOUDFLARE_TUNNEL_URL);
                     }}
-                    className="px-2.5 py-1 text-[11px] bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 rounded-md font-semibold transition-colors"
+                    className="px-2.5 py-1 text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md font-medium transition-colors"
                   >
-                    Cloudflare Live (Online)
+                    Cloudflare Tunnel
                   </button>
                   <button
                     type="button"

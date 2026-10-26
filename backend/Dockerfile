@@ -19,10 +19,10 @@ COPY . .
 # Create uploads storage folder
 RUN mkdir -p uploads
 
-ENV PORT=5000
+ENV PORT=10000
 ENV FLASK_ENV=production
 ENV PYTHONUNBUFFERED=1
 
-EXPOSE 5000
+EXPOSE 10000
 
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-5000} --workers 3 --timeout 120 run:app"]
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-10000} --workers 2 --timeout 120 run:app"]

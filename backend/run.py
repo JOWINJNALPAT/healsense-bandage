@@ -6,10 +6,13 @@ from app.seed import seed_database
 app = create_app()
 
 with app.app_context():
-    db.create_all()
-    # Auto-seed if in dev/demo mode
-    if app.config.get('DEMO_MODE', True):
-        seed_database(app)
+    try:
+        db.create_all()
+        # Auto-seed if in dev/demo mode
+        if app.config.get('DEMO_MODE', True):
+            seed_database(app)
+    except Exception as e:
+        print(f"Warning during DB initialization or seeding: {e}")
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
