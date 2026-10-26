@@ -20,6 +20,7 @@ if (-not $HfUsername) {
 
 Write-Host "Syncing backend files into deploy\hf_space..." -ForegroundColor Cyan
 Copy-Item -Path "backend\requirements.txt", "backend\run.py" -Destination "deploy\hf_space\" -Force
+if (Test-Path "deploy\hf_space\app") { Remove-Item -Recurse -Force "deploy\hf_space\app" }
 Copy-Item -Path "backend\app" -Destination "deploy\hf_space\app" -Recurse -Force
 
 $spaceDir = Join-Path (Get-Location) "deploy\hf_space"
