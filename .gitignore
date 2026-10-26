@@ -1,0 +1,23 @@
+# Node / Frontend
+node_modules/
+dist/
+.vite/
+npm-debug.log*
+
+# Python / Backend
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.pytest_cache/
+*.db
+uploads/*.jpg
+uploads/*.png
+tests/temp_uploads/
+tests/test_run.db
+
+# Environment & Secrets
+.env
+.env.local
+.DS_Store
+Thumbs.db

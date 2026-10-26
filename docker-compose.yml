@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: healsense-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: healsense
+      POSTGRES_USER: healsense_user
+      POSTGRES_PASSWORD: healsense_dev_password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: healsense-backend
+    restart: always
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://healsense_user:healsense_dev_password@db:5432/healsense
+      SECRET_KEY: healsense-production-secret-min-32-chars-key-2026
+      FRONTEND_ORIGIN: http://localhost:5173
+      DEMO_MODE: "true"
+      PORT: 5000
+    volumes:
+      - backend-uploads:/app/uploads
+    ports:
+      - "5000:5000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: healsense-frontend
+    restart: always
+    depends_on:
+      - backend
+    environment:
+      VITE_API_BASE_URL: http://localhost:5000
+    ports:
+      - "3000:80"
+
+volumes:
+  pgdata:
+  backend-uploads:
