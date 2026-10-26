@@ -1,6 +1,7 @@
 # Node / Frontend
 node_modules/
 dist/
+build/
 .vite/
 npm-debug.log*
 
