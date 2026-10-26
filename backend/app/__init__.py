@@ -34,6 +34,16 @@ def create_app(config_class=Config):
         # Ensure database tables exist
         db.create_all()
 
+    # Root status endpoint
+    @app.route('/', methods=['GET'])
+    def index():
+        return jsonify({
+            'status': 'online',
+            'service': 'HealSense API',
+            'version': '1.0.0',
+            'health_check': '/api/health'
+        })
+
     # Health check endpoint
     @app.route('/api/health', methods=['GET'])
     def health_check():
