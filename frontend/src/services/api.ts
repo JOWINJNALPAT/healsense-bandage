@@ -24,6 +24,12 @@ export const getApiBaseUrl = (): string => {
   if (typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform()) {
     return DEFAULT_SERVER_URL;
   }
+  // When hosted on web (like Render static site) and DEFAULT_SERVER_URL is available, use it instead of relative path
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    if (DEFAULT_SERVER_URL && !DEFAULT_SERVER_URL.includes('192.168.')) {
+      return DEFAULT_SERVER_URL;
+    }
+  }
   return '';
 };
 
@@ -50,15 +56,19 @@ export const testServerConnection = async (targetUrl?: string): Promise<{ succes
     });
     clearTimeout(timeoutId);
     if (res.ok) {
+      const contentType = res.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        return { success: false, message: 'URL returned HTML instead of API JSON. Make sure this is the Backend Web Service URL, not the static frontend URL.' };
+      }
       const data = await res.json();
       return { success: true, message: 'Server is online & operational!', version: data.version || '1.0.0' };
     }
     return { success: false, message: `Server replied with HTTP ${res.status}` };
   } catch (err: any) {
     if (err.name === 'AbortError') {
-      return { success: false, message: 'Connection timed out (6s). Check if phone and PC are on the same Wi-Fi.' };
+      return { success: false, message: 'Connection timed out (6s). Check if backend is awake.' };
     }
-    return { success: false, message: err.message || 'Cannot reach server. Verify host IP and Wi-Fi.' };
+    return { success: false, message: err.message || 'Cannot reach server. Verify backend URL.' };
   }
 };
 
@@ -79,13 +89,16 @@ class ApiService {
   }
 
   private async handleResponse<T>(res: Response): Promise<T> {
+    const contentType = res.headers.get('content-type') || '';
     if (!res.ok) {
       let errorMsg = `Request failed with status ${res.status}`;
-      try {
-        const errorData = await res.json();
-        if (errorData.error) errorMsg = errorData.error;
-      } catch {
-        // Response wasn't json
+      if (contentType.includes('application/json')) {
+        try {
+          const errorData = await res.json();
+          if (errorData.error) errorMsg = errorData.error;
+        } catch {
+          // ignore
+        }
       }
       if (res.status === 401) {
         localStorage.removeItem('healsense_token');
@@ -93,7 +106,16 @@ class ApiService {
       }
       throw new Error(errorMsg);
     }
-    return res.json() as Promise<T>;
+
+    if (!contentType.includes('application/json')) {
+      throw new Error('Backend API not found. Please deploy the Backend Web Service on Render and set its URL in Settings (⚙️).');
+    }
+
+    try {
+      return (await res.json()) as T;
+    } catch {
+      throw new Error('Invalid response from server. Please verify backend service.');
+    }
   }
 
   // --- Auth ---
